@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	//"net/smtp"
 
 	"github.com/spf13/viper"
 )
@@ -12,17 +11,17 @@ func main() {
 	v1 := viper.New()
 	v1.SetConfigFile(".env")
 	v1.ReadInConfig()
-	var variable = v1.GetString("variable")
 
-	fmt.Println(variable)
+	from := v1.GetString("from")
+	password := v1.GetString("password")
+	to := v1.GetStringSlice("to")
 
-	// from := "my_email@gmail.com"
-	// password := "super_secret_password"
-	// to := []string{"recipient@email.com"}
+	message := []byte("My super secret message.")
+
+	fmt.Printf("email message %s sent from %s to %s %s", message, from, to, password)
+
 	// smtpHost := "smtp.gmail.com"
 	// smtpPort := "587"
-
-	// message := []byte("My super secret message.")
 
 	// auth := smtp.PlainAuth("", from, password, smtpHost)
 
