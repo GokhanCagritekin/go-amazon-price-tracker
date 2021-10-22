@@ -17,6 +17,7 @@ func main() {
 	)
 
 	priceStr := ""
+	var desiredPrice float64 = 250
 
 	collector.OnHTML("#priceblock_ourprice", func(element *colly.HTMLElement) {
 		priceStr = element.Text
@@ -44,15 +45,18 @@ func main() {
 
 	message := []byte("My super secret message.")
 
-	fmt.Printf("email message: %s sent from %s to %s %s", message, from, to, password)
+	if price < desiredPrice {
+		fmt.Printf("email message: %s sent from %s to %s %s", message, from, to, password)
+		// smtpHost := "smtp.gmail.com"
+		// smtpPort := "587"
 
-	// smtpHost := "smtp.gmail.com"
-	// smtpPort := "587"
+		// auth := smtp.PlainAuth("", from, password, smtpHost)
 
-	// auth := smtp.PlainAuth("", from, password, smtpHost)
-
-	// err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
-	// if err != nil {
-	// 	log.Fatal(err)
-	// }
+		// err := smtp.SendMail(smtpHost+":"+smtpPort, auth, from, to, message)
+		// if err != nil {
+		// 	log.Fatal(err)
+		// }
+	} else {
+		fmt.Println("too expensive")
+	}
 }
