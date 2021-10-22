@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 
@@ -12,12 +13,12 @@ import (
 
 func main() {
 
-	collector := colly.NewCollector(
-		colly.AllowedDomains("amazon.com", "www.amazon.com"),
-	)
+	desiredPrice, _ := strconv.ParseFloat(os.Args[1], 64)
+	url := os.Args[2]
+
+	collector := colly.NewCollector()
 
 	priceStr := ""
-	var desiredPrice float64 = 250
 
 	collector.OnHTML("#priceblock_ourprice", func(element *colly.HTMLElement) {
 		priceStr = element.Text
@@ -26,7 +27,7 @@ func main() {
 	collector.OnRequest(func(request *colly.Request) {
 		fmt.Println("Visiting", request.URL.String())
 	})
-	collector.Visit("https://www.amazon.com/Oculus-Quest-Advanced-All-One-Virtual/dp/B099VMT8VZ")
+	collector.Visit(url)
 
 	price, err := strconv.ParseFloat(strings.ReplaceAll(priceStr, "$", ""), 64)
 	if err != nil {
