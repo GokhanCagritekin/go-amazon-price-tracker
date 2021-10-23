@@ -1,17 +1,34 @@
 package main
 
 import (
+	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"strconv"
 	"strings"
+	"time"
 
+	"github.com/go-redis/redis/v8"
 	"github.com/gocolly/colly"
 	"github.com/spf13/viper"
 )
 
+type Tracks struct {
+	DesiredPrice float64 `json:"desiredPrice"`
+}
+
+var ctx = context.Background()
+
 func main() {
+
+	client := redis.NewClient(&redis.Options{
+		Addr:        "localhost:6000",
+		Password:    "",
+		DB:          0,
+		IdleTimeout: 5 * time.Minute,
+	})
 
 	desiredPrice, _ := strconv.ParseFloat(os.Args[1], 64)
 	url := os.Args[2]
@@ -57,7 +74,34 @@ func main() {
 		// if err != nil {
 		// 	log.Fatal(err)
 		// }
+		client.Del(ctx, url)
 	} else {
 		fmt.Println("too expensive")
+
+		_, err := client.Get(ctx, url).Result()
+		if err == redis.Nil {
+			fmt.Printf("%s does not exist\n", url)
+			track := Tracks{DesiredPrice: desiredPrice}
+			fmt.Println(track)
+			json, err := json.Marshal(track)
+			if err != nil {
+				log.Println(err)
+			}
+
+			err = client.Set(ctx, url, json, 0).Err()
+
+			if err != nil {
+				log.Println(err)
+			}
+		} else if err != nil {
+			panic(err)
+		} else {
+			fmt.Printf("%s does exist\n", url)
+		}
 	}
+	keys, _ := client.Keys(ctx, "*http*").Result()
+	for i := 0; i < len(keys); i++ {
+		fmt.Println(keys[i], client.Get(ctx, keys[i]))
+	}
+
 }
