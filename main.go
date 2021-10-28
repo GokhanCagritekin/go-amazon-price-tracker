@@ -60,16 +60,22 @@ func doEvery(ctx context.Context, d time.Duration, f func(time.Time)) error {
 	}
 }
 
+func getDesiredPrice(str string) (desiredPrice float64) {
+	arr := strings.Split(str, ":")
+	arr2 := strings.Split(arr[1], "}")
+	desiredPrice, err := strconv.ParseFloat(arr2[0], 64)
+	if err != nil {
+		log.Println(err)
+	}
+	return desiredPrice
+}
+
 func checkPrices(t time.Time) {
 	client := GetRedisClient()
 
 	keys, _ := client.Keys(ctx, "*http*").Result()
 	for i := 0; i < len(keys); i++ {
-		priceStr := fmt.Sprint(client.Get(ctx, keys[i]))
-		desiredPrice, err := strconv.ParseFloat(priceStr, 64)
-		if err != nil {
-			log.Println(err)
-		}
+		desiredPrice := getDesiredPrice(fmt.Sprint(client.Get(ctx, keys[i]).Result()))
 		go check(keys[i], desiredPrice, client)
 	}
 }
